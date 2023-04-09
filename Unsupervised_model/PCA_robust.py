@@ -1,4 +1,5 @@
 import numpy as np
+import utils
 from sklearn.covariance import MinCovDet
 
 class PCA_robust:
@@ -29,7 +30,7 @@ class PCA_robust:
 
     def transform(self, X):
         # Normalize the data
-        X = (X - self.mean) / np.std(X, axis=0)
+        X = self.utils.normalize(X)
 
         # Estimate the robust covariance matrix (MCD)
         cov_matrix = MinCovDet().fit(X).covariance_
