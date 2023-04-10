@@ -4,7 +4,7 @@ from scipy.optimize import minimize
 
 
 class TSNE:
-    def __init__(self, n_components, perplexity=30, learning_rate=150.0, n_iter=10, random_state=None):
+    def __init__(self, n_components, perplexity=30, learning_rate=150.0, n_iter=100, random_state=None):
         self.n_components = n_components
         self.perplexity = perplexity
         self.learning_rate = learning_rate
@@ -36,7 +36,7 @@ class TSNE:
             Q = utils.compute_q(self,Y)
             
             # Compute gradients
-            grad = utils.compute_gradient(self,probability, Q, Y)
+            grad = utils.compute_gradient(self,probability, Q, Y, distance)
 
             # Update Y
             Y -= self.learning_rate * grad
@@ -48,7 +48,7 @@ class TSNE:
         distance = utils.pairwise_distances(self,X)
         probability = utils.probability(self,distance, self.perplexity)
         Q = utils.compute_q(self,self.embedding)
-        return utils.compute_gradient(self,probability, Q,self.embedding)
+        return utils.compute_gradient(self,probability, Q,self.embedding,distance)
     
     def fit_transform(self, X):
         self.fit(X)

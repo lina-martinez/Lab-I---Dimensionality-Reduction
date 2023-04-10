@@ -53,27 +53,24 @@ def compute_q(self, Y):
     Y_diff = Y[np.newaxis, :] - Y[:, np.newaxis]
 
     # Get the euclidean distance squared
-    dist_squared = np.sum(Y_diff**2, axis=-1)
+    distances = np.sum(Y_diff**2, axis=-1)
 
     # Q-value
-    Q = 1.0 / (1.0 + dist_squared)
+    Q = 1.0 / (1.0 + distances)
 
     # Set the diagonal of the matrix Q to zero
     Q[range(n_samples), range(n_samples)] = 0.0
     Q /= np.sum(Q)
     return Q
 
-def compute_gradient(self, probability , Q , Y):
+def compute_gradient(self, probability , Q , Y, distance):
     """
     Computes the gradients for the t-SNE algorithm.
     """
     # Compute pairwise differences in the embedded space
     Y_diff = Y[:, np.newaxis, :] - Y[np.newaxis, :, :]
 
-    # Compute pairwise distances in the embedded space
-    distances = np.linalg.norm(Y_diff, axis=-1)
-
     # Compute the t-SNE gradient
-    factor = 4 * (probability - Q)[:,:,np.newaxis] * Y_diff * (1 / (1 + distances**2))[:,:,np.newaxis]
+    factor = 4 * (probability - Q)[:,:,np.newaxis] * Y_diff * (1 / (1 + distance**2))[:,:,np.newaxis]
     grad = np.sum(factor, axis=1)
     return grad
