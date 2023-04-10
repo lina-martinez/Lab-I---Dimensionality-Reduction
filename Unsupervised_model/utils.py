@@ -45,7 +45,7 @@ def probability(self, distance, perplexity):
 
 def compute_q(self, Y):
     """
-    Computes the Q-values for the t-SNE algorithm.
+    Computes the Q-values for the tSNE algorithm.
     """
     n_samples = Y.shape[0]
     Q = np.zeros((n_samples, n_samples))
@@ -73,3 +73,15 @@ def compute_gradient(self, probability , gradient , Y):
     for i in range(Y.shape[0]):
         grad[i] = 4 * np.sum(pq_diff[:, i, np.newaxis] * Y_diff[:, i] * (1 / (1 + distances[:, i]**2))[:, np.newaxis], axis=0)
     return grad
+
+def cost(self, Y, probability):
+    """
+    Compute the t-SNE cost function.
+    """
+    # Compute pairwise distances in the embedded space
+    distance = pairwise_distances(self,Y)
+    
+    # Compute the t-SNE cost function
+    cost = np.sum(probability * np.log(probability / compute_q(self,Y)))  
+    
+    return cost
