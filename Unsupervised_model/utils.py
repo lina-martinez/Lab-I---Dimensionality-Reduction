@@ -4,12 +4,14 @@ def pairwise_distances(self, X):
     """
     Computes pairwise distances between samples in X.
     """
-    distance = np.zeros((X.shape[0], X.shape[0]))
-    for i in range(X.shape[0]):
-        for j in range(i+1, X.shape[0]):
-            d = np.linalg.norm(X[i]-X[j])
-            distance[i,j] = d
-            distance[j,i] = d
+    # Compute squared distances
+    distance = np.sum(X**2, axis=1, keepdims=True) + np.sum(X**2, axis=1) - 2 * np.dot(X, X.T)
+
+    # Replace negative values with 0 (due to floating point errors)
+    distance[distance < 0] = 0
+
+    # Take the square root to obtain Euclidean distances
+    distance = np.sqrt(distance)
     return distance
 
 def normalize(self, X):
@@ -48,40 +50,30 @@ def compute_q(self, Y):
     Computes the Q-values for the tSNE algorithm.
     """
     n_samples = Y.shape[0]
-    Q = np.zeros((n_samples, n_samples))
-    for i in range(n_samples):
-        for j in range(i+1, n_samples):
-            q = 1.0 / (1.0 + np.linalg.norm(Y[i] - Y[j])**2)
-            Q[i,j] = q
-            Q[j,i] = q
+    Y_diff = Y[np.newaxis, :] - Y[:, np.newaxis]
+
+    # Get the euclidean distance squared
+    dist_squared = np.sum(Y_diff**2, axis=-1)
+
+    # Q-value
+    Q = 1.0 / (1.0 + dist_squared)
+
+    # Set the diagonal of the matrix Q to zero
+    Q[range(n_samples), range(n_samples)] = 0.0
     Q /= np.sum(Q)
     return Q
 
-def compute_gradient(self, probability , gradient , Y):
+def compute_gradient(self, probability , Q , Y):
     """
     Computes the gradients for the t-SNE algorithm.
     """
-    pq_diff = probability - gradient
+    # Compute pairwise differences in the embedded space
+    Y_diff = Y[:, np.newaxis, :] - Y[np.newaxis, :, :]
 
     # Compute pairwise distances in the embedded space
-
-    Y_diff = Y[:, np.newaxis, :] - Y[np.newaxis, :, :]
     distances = np.linalg.norm(Y_diff, axis=-1)
 
     # Compute the t-SNE gradient
-    grad = np.zeros_like(Y)
-    for i in range(Y.shape[0]):
-        grad[i] = 4 * np.sum(pq_diff[:, i, np.newaxis] * Y_diff[:, i] * (1 / (1 + distances[:, i]**2))[:, np.newaxis], axis=0)
+    factor = 4 * (probability - Q)[:,:,np.newaxis] * Y_diff * (1 / (1 + distances**2))[:,:,np.newaxis]
+    grad = np.sum(factor, axis=1)
     return grad
-
-def cost(self, Y, probability):
-    """
-    Compute the t-SNE cost function.
-    """
-    # Compute pairwise distances in the embedded space
-    distance = pairwise_distances(self,Y)
-    
-    # Compute the t-SNE cost function
-    cost = np.sum(probability * np.log(probability / compute_q(self,Y)))  
-    
-    return cost
