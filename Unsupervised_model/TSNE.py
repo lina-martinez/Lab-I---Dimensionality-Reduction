@@ -31,7 +31,7 @@ class TSNE:
         # Optimization using gradient descent
         for i in range(self.n_iter):
             # Calculate dY
-            print(self.n_iter)
+
             # Compute Q-values
             Q = utils.compute_q(self,Y)
             
