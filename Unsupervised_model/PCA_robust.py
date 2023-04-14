@@ -48,7 +48,10 @@ class PCA_robust:
     
     def fit_transform(self, X):
         # Center the data
-        X = X - self.mean
+        if len(X) > 1:
+            X = X - self.mean
+        else:
+            X = (X - np.array(self.mean).reshape(1, -1))
 
         # Project the data into the principal components
         X_transformed = np.dot(X, self.components)

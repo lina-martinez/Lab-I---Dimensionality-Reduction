@@ -54,18 +54,6 @@ class TSNE:
         self.fit(X)
         return self.embedding
 
-    def inverse_transform(self, Y):
-        Y = np.asarray(Y)
-        X = self.embedding # Use the original embedding as a starting point
-        n_iter = 50 # Use a smaller number of iterations for the inverse transform
-        for i in range(n_iter):
-            Q = utils.compute_q(self,Y)
-            grad = utils.compute_gradient(self,Q, self.utils.probability(self.utils.pairwise_distances(X), self.perplexity), X)
-            X -= self.learning_rate * grad
-            X = utils.normalize(self,X)
-        return X
-
-
 # import matplotlib.pyplot as plt
 # from sklearn.datasets import load_wine
 # from sklearn.preprocessing import StandardScaler
